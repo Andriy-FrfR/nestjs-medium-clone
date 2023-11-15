@@ -1,5 +1,11 @@
 import { Type } from 'class-transformer';
-import { IsEmail, IsString, Length, ValidateNested } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Length,
+  ValidateNested,
+} from 'class-validator';
 
 class RegisterDtoUserFields {
   @IsString()
@@ -15,6 +21,7 @@ class RegisterDtoUserFields {
 }
 
 export class RegisterDto {
+  @IsNotEmpty()
   @ValidateNested()
   @Type(() => RegisterDtoUserFields)
   user: RegisterDtoUserFields;

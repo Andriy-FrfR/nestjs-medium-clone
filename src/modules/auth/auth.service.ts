@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 
 import { User } from '../user/user.entity';
 import { RegisterDto } from './dtos/register.dto';
+import { LoginDto } from './dtos/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -47,6 +48,27 @@ export class AuthService {
 
   private async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10);
+  }
+
+  async login(loginDto: LoginDto) {
+    const user = await this.userRepository.findOneBy({
+      email: loginDto.user.email,
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const passwordsMatch = await bcrypt.compare(
+      loginDto.user.password,
+      user.password,
+    );
+
+    if (!passwordsMatch) {
+      throw new HttpException('Password is not valid', HttpStatus.BAD_REQUEST);
+    }
+
+    return user;
   }
 
   buildAuthResponse(user: User) {
