@@ -18,13 +18,13 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   async register(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto);
-    return this.authService.buildAuthResponse(user);
+    return this.authService.buildUserResponse(user);
   }
 
   @Post('users/login')
   @UsePipes(new ValidationPipe())
   async login(@Body() loginDto: LoginDto) {
     const user = await this.authService.login(loginDto);
-    return this.authService.buildAuthResponse(user);
+    return this.authService.buildUserResponse(user);
   }
 }

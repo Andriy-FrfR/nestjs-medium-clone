@@ -5,14 +5,15 @@ import { Repository } from 'typeorm';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 
-import { User } from '../user/user.entity';
+import { UserEntity } from '../user/user.entity';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
     private configService: ConfigService,
   ) {}
 
@@ -46,13 +47,12 @@ export class AuthService {
     return user;
   }
 
-  private async hashPassword(password: string): Promise<string> {
-    return await bcrypt.hash(password, 10);
-  }
-
   async login(loginDto: LoginDto) {
-    const user = await this.userRepository.findOneBy({
-      email: loginDto.user.email,
+    const user = await this.userRepository.findOne({
+      where: {
+        email: loginDto.user.email,
+      },
+      select: ['email', 'username', 'bio', 'image', 'password'],
     });
 
     if (!user) {
@@ -71,7 +71,7 @@ export class AuthService {
     return user;
   }
 
-  buildAuthResponse(user: User) {
+  buildUserResponse(user: UserEntity) {
     const accessToken = jwt.sign(
       String(user.id),
       this.configService.get('JWT_SECRET'),
@@ -85,5 +85,13 @@ export class AuthService {
         token: accessToken,
       },
     };
+  }
+
+  private async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 10);
+  }
+
+  decodeToken(token: string) {
+    return jwt.decode(token, this.configService.get('JWT_SECRET'));
   }
 }
