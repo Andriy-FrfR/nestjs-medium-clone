@@ -6,11 +6,12 @@ import {
 } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { AuthModule } from '../auth/auth.module';
+
 import { UserService } from './user.service';
 import { UserEntity } from './user.entity';
-import { AttachUserToRequestMiddleware } from './middlewares/attach-user-to-request.middleware';
-import { AuthModule } from '../auth/auth.module';
 import { UserController } from './user.controller';
+import { AttachUserToRequestMiddleware } from './middlewares/attach-user-to-request.middleware';
 
 @Module({
   imports: [

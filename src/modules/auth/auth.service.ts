@@ -6,6 +6,7 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 
 import { UserEntity } from '../user/user.entity';
+
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 
@@ -87,7 +88,7 @@ export class AuthService {
     };
   }
 
-  private async hashPassword(password: string): Promise<string> {
+  async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10);
   }
 

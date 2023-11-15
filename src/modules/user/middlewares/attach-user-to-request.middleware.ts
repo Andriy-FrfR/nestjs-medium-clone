@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { Repository } from 'typeorm';
 
 import { UserEntity } from '../user.entity';
-import { AuthService } from 'src/modules/auth/auth.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Injectable()
 export class AttachUserToRequestMiddleware implements NestMiddleware {
