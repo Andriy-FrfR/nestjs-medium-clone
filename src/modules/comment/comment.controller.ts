@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Post,
   UseGuards,
@@ -18,6 +19,12 @@ import { CreateCommentDto } from './dtos/create-comment.dto';
 @Controller('articles/:slug/comments')
 export class CommentController {
   constructor(private commentService: CommentService) {}
+
+  @Get()
+  async getComments(@Param('slug') slug: string) {
+    const comments = await this.commentService.getCommentsForArticle(slug);
+    return this.commentService.buildMultipleCommentsResponse(comments);
+  }
 
   @Post()
   @UseGuards(AuthenticatedGuard)
