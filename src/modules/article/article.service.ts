@@ -14,6 +14,18 @@ export class ArticleService {
     private articleRepository: Repository<ArticleEntity>,
   ) {}
 
+  async getArticleBySlug(slug: string): Promise<ArticleEntity> {
+    const article = await this.articleRepository.findOne({
+      where: { slug },
+      relations: ['author'],
+    });
+
+    if (!article)
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+
+    return article;
+  }
+
   async createArticle(
     createArticleDto: CreateArticleDto,
     user: UserEntity,
@@ -38,16 +50,13 @@ export class ArticleService {
     );
   }
 
-  async getArticleBySlug(slug: string): Promise<ArticleEntity> {
-    const article = await this.articleRepository.findOne({
-      where: { slug },
-      relations: ['author'],
-    });
+  async deleteArticle(slug: string, user: UserEntity) {
+    const article = await this.getArticleBySlug(slug);
 
-    if (!article)
-      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+    if (article.author.id !== user.id)
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
 
-    return article;
+    await this.articleRepository.delete({ slug });
   }
 
   buildArticleResponse(article: ArticleEntity) {
