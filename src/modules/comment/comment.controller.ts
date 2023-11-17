@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -40,5 +41,11 @@ export class CommentController {
       user,
     );
     return this.commentService.buildSingleCommentResponse(comment);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthenticatedGuard)
+  async deleteComment(@Param('id') id: number, @User() user: UserEntity) {
+    await this.commentService.deleteComment(id, user);
   }
 }

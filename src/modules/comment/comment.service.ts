@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -38,9 +38,23 @@ export class CommentService {
     return this.commentRepository.save(comment);
   }
 
+  async deleteComment(id: number, user: UserEntity): Promise<void> {
+    const comment = await this.commentRepository.findOne({
+      where: { id },
+      relations: ['author'],
+    });
+
+    if (!comment) throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    if (comment.author.id !== user.id)
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+
+    await this.commentRepository.delete(id);
+  }
+
   buildSingleCommentResponse(comment: CommentEntity) {
     return {
       comment: {
+        id: comment.id,
         body: comment.body,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
@@ -56,6 +70,7 @@ export class CommentService {
   buildMultipleCommentsResponse(comments: CommentEntity[]) {
     return {
       comments: comments.map((comment) => ({
+        id: comment.id,
         body: comment.body,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
