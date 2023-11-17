@@ -18,7 +18,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto): Promise<UserEntity> {
     const [userWithGivenEmail, userWithGivenUsername] = await Promise.all([
       this.userRepository.findOneBy({
         email: registerDto.user.email,
@@ -48,7 +48,7 @@ export class AuthService {
     return user;
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<UserEntity> {
     const user = await this.userRepository.findOne({
       where: {
         email: loginDto.user.email,

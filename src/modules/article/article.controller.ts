@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -14,7 +15,9 @@ import { ArticleService } from './article.service';
 import { User } from '../user/decorators/user.decorator';
 import { UserEntity } from '../user/user.entity';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
+
 import { CreateArticleDto } from './dtos/create-article.dto';
+import { UpdateArticleDto } from './dtos/update-article.dto';
 
 @Controller('articles')
 export class ArticleController {
@@ -35,6 +38,22 @@ export class ArticleController {
   ) {
     const article = await this.articleService.createArticle(
       createArticleDto,
+      user,
+    );
+    return this.articleService.buildArticleResponse(article);
+  }
+
+  @Put(':slug')
+  @UseGuards(AuthenticatedGuard)
+  @UsePipes(new ValidationPipe())
+  async updateArticle(
+    @Param('slug') slug: string,
+    @Body() updateArticleDto: UpdateArticleDto,
+    @User() user: UserEntity,
+  ) {
+    const article = await this.articleService.updateArticle(
+      slug,
+      updateArticleDto,
       user,
     );
     return this.articleService.buildArticleResponse(article);

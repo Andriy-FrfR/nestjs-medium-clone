@@ -6,6 +6,7 @@ import { UserEntity } from '../user/user.entity';
 
 import { ArticleEntity } from './article.entity';
 import { CreateArticleDto } from './dtos/create-article.dto';
+import { UpdateArticleDto } from './dtos/update-article.dto';
 
 @Injectable()
 export class ArticleService {
@@ -40,6 +41,31 @@ export class ArticleService {
     return await this.articleRepository.save(article);
   }
 
+  async updateArticle(
+    slug: string,
+    updateArticleDto: UpdateArticleDto,
+    user: UserEntity,
+  ): Promise<ArticleEntity> {
+    const article = await this.getArticleBySlug(slug);
+
+    if (article.author.id !== user.id)
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+
+    const filteredInput = Object.fromEntries(
+      Object.entries(updateArticleDto.article).filter(([, value]) =>
+        Boolean(value),
+      ),
+    );
+
+    if (filteredInput.title && filteredInput.title !== article.title) {
+      filteredInput.slug = this.generateSlug(filteredInput.title);
+    }
+
+    Object.assign(article, filteredInput);
+
+    return await this.articleRepository.save(article);
+  }
+
   private generateSlug(string: string): string {
     return (
       string
@@ -56,7 +82,7 @@ export class ArticleService {
     if (article.author.id !== user.id)
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
 
-    await this.articleRepository.delete({ slug });
+    await this.articleRepository.delete(article);
   }
 
   buildArticleResponse(article: ArticleEntity) {
