@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -14,7 +14,10 @@ export class ArticleService {
     private articleRepository: Repository<ArticleEntity>,
   ) {}
 
-  async createArticle(createArticleDto: CreateArticleDto, user: UserEntity) {
+  async createArticle(
+    createArticleDto: CreateArticleDto,
+    user: UserEntity,
+  ): Promise<ArticleEntity> {
     const slug = this.generateSlug(createArticleDto.article.title);
     const article = this.articleRepository.create({
       ...createArticleDto.article,
@@ -25,7 +28,7 @@ export class ArticleService {
     return await this.articleRepository.save(article);
   }
 
-  private generateSlug(string: string) {
+  private generateSlug(string: string): string {
     return (
       string
         .toLowerCase()
@@ -33,6 +36,18 @@ export class ArticleService {
         .filter((value) => Boolean(value))
         .join('-') + `-${String(Date.now()).slice(-6)}`
     );
+  }
+
+  async getArticleBySlug(slug: string): Promise<ArticleEntity> {
+    const article = await this.articleRepository.findOne({
+      where: { slug },
+      relations: ['author'],
+    });
+
+    if (!article)
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+
+    return article;
   }
 
   buildArticleResponse(article: ArticleEntity) {
