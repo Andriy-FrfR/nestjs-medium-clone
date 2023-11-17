@@ -3,10 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { UserEntity } from '../user/user.entity';
+import { CommentEntity } from '../comment/comment.entity';
 
 @Entity('articles')
 export class ArticleEntity {
@@ -33,4 +36,7 @@ export class ArticleEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.articles)
   author: UserEntity;
+
+  @OneToMany(() => CommentEntity, (comment) => comment.article)
+  comments: CommentEntity[];
 }

@@ -7,6 +7,7 @@ import { ArticleService } from './article.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ArticleEntity])],
+  exports: [ArticleService],
   controllers: [ArticleController],
   providers: [ArticleService],
 })
