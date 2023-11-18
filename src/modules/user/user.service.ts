@@ -61,6 +61,17 @@ export class UserService {
     return user;
   }
 
+  async getUserWithFollowedUsers(username: string): Promise<UserEntity> {
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['followedBy'],
+    });
+
+    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+    return user;
+  }
+
   async createFollow(
     userToFollowUsername: string,
     currentUser: UserEntity,
@@ -133,14 +144,14 @@ export class UserService {
     };
   }
 
-  buildProfileResponse(user: UserEntity, currentUser: UserEntity) {
+  buildProfileResponse(user: UserEntity, currentUser?: UserEntity) {
     return {
       profile: {
         username: user.username,
         bio: user.bio,
         image: user.image,
         following: Boolean(
-          user.followedBy.find((user) => user.id === currentUser.id),
+          user.followedBy.find((user) => user.id === currentUser?.id),
         ),
       },
     };

@@ -39,6 +39,15 @@ export class UserController {
     return this.userService.buildUserResponse(updatedUser);
   }
 
+  @Get('profiles/:username')
+  async getProfile(
+    @Param('username') username: string,
+    @User() currentUser?: UserEntity,
+  ) {
+    const user = await this.userService.getUserWithFollowedUsers(username);
+    return this.userService.buildProfileResponse(user, currentUser);
+  }
+
   @Post('profiles/:username/follow')
   @UseGuards(AuthenticatedGuard)
   async createFollow(
