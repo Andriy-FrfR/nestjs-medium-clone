@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
+  Post,
   Put,
   UseGuards,
   UsePipes,
@@ -34,5 +37,31 @@ export class UserController {
   ) {
     const updatedUser = await this.userService.updateUser(user, updateUserDto);
     return this.userService.buildUserResponse(updatedUser);
+  }
+
+  @Post('profiles/:username/follow')
+  @UseGuards(AuthenticatedGuard)
+  async createFollow(
+    @Param('username') userToFollowUsername: string,
+    @User() currentUser: UserEntity,
+  ) {
+    const followedUser = await this.userService.createFollow(
+      userToFollowUsername,
+      currentUser,
+    );
+    return this.userService.buildProfileResponse(followedUser, currentUser);
+  }
+
+  @Delete('profiles/:username/follow')
+  @UseGuards(AuthenticatedGuard)
+  async deleteFollow(
+    @Param('username') userToUnfollowUsername: string,
+    @User() currentUser: UserEntity,
+  ) {
+    const followedUser = await this.userService.deleteFollow(
+      userToUnfollowUsername,
+      currentUser,
+    );
+    return this.userService.buildProfileResponse(followedUser, currentUser);
   }
 }
