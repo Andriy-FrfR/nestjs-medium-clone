@@ -24,9 +24,9 @@ export class ArticleController {
   constructor(private articleService: ArticleService) {}
 
   @Get(':slug')
-  async getArticle(@Param('slug') slug: string) {
+  async getArticle(@Param('slug') slug: string, @User() user: UserEntity) {
     const article = await this.articleService.getArticleBySlug(slug);
-    return this.articleService.buildArticleResponse(article);
+    return this.articleService.buildArticleResponse(article, user);
   }
 
   @Post()
@@ -40,7 +40,7 @@ export class ArticleController {
       createArticleDto,
       user,
     );
-    return this.articleService.buildArticleResponse(article);
+    return this.articleService.buildArticleResponse(article, user);
   }
 
   @Put(':slug')
@@ -56,12 +56,29 @@ export class ArticleController {
       updateArticleDto,
       user,
     );
-    return this.articleService.buildArticleResponse(article);
+    return this.articleService.buildArticleResponse(article, user);
   }
 
   @Delete(':slug')
   @UseGuards(AuthenticatedGuard)
   async deleteArticle(@Param('slug') slug: string, @User() user: UserEntity) {
     await this.articleService.deleteArticle(slug, user);
+  }
+
+  @Post(':slug/favorite')
+  @UseGuards(AuthenticatedGuard)
+  async favoriteArticle(@Param('slug') slug: string, @User() user: UserEntity) {
+    const article = await this.articleService.favoriteArticle(slug, user);
+    return this.articleService.buildArticleResponse(article, user);
+  }
+
+  @Delete(':slug/favorite')
+  @UseGuards(AuthenticatedGuard)
+  async unfavoriteArticle(
+    @Param('slug') slug: string,
+    @User() user: UserEntity,
+  ) {
+    const article = await this.articleService.unfavoriteArticle(slug, user);
+    return this.articleService.buildArticleResponse(article, user);
   }
 }

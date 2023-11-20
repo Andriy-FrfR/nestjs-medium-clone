@@ -18,7 +18,7 @@ export class ArticleService {
   async getArticleBySlug(slug: string): Promise<ArticleEntity> {
     const article = await this.articleRepository.findOne({
       where: { slug },
-      relations: ['author'],
+      relations: ['author', 'author.followedBy', 'favoritedBy'],
     });
 
     if (!article)
@@ -85,7 +85,39 @@ export class ArticleService {
     await this.articleRepository.delete(article);
   }
 
-  buildArticleResponse(article: ArticleEntity) {
+  async favoriteArticle(
+    slug: string,
+    currentUser: UserEntity,
+  ): Promise<ArticleEntity> {
+    const article = await this.getArticleBySlug(slug);
+
+    if (article.favoritedBy.find((user) => user.id === currentUser.id)) {
+      throw new HttpException('Already favorited', HttpStatus.BAD_REQUEST);
+    }
+
+    article.favoritedBy.push(currentUser);
+
+    return this.articleRepository.save(article);
+  }
+
+  async unfavoriteArticle(
+    slug: string,
+    currentUser: UserEntity,
+  ): Promise<ArticleEntity> {
+    const article = await this.getArticleBySlug(slug);
+
+    if (!article.favoritedBy.find((user) => user.id === currentUser.id)) {
+      throw new HttpException('Already unfavorited', HttpStatus.BAD_REQUEST);
+    }
+
+    article.favoritedBy = article.favoritedBy.filter(
+      (user) => user.id !== currentUser.id,
+    );
+
+    return this.articleRepository.save(article);
+  }
+
+  buildArticleResponse(article: ArticleEntity, currentUser?: UserEntity) {
     return {
       article: {
         slug: article.slug,
@@ -94,10 +126,19 @@ export class ArticleService {
         body: article.body,
         createdAt: article.createdAt,
         updatedAt: article.updatedAt,
+        favorited: Boolean(
+          article.favoritedBy.find((user) => user.id === currentUser?.id),
+        ),
+        favoritesCount: article.favoritedBy.length,
         author: {
           username: article.author.username,
           bio: article.author.bio,
           image: article.author.image,
+          following: Boolean(
+            article.author.followedBy.find(
+              (user) => user.id === currentUser?.id,
+            ),
+          ),
         },
       },
     };

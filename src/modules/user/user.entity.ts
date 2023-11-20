@@ -45,4 +45,7 @@ export class UserEntity {
 
   @ManyToMany(() => UserEntity, (user) => user.following)
   followedBy: UserEntity[];
+
+  @ManyToMany(() => ArticleEntity, (article) => article.favoritedBy)
+  favoritedArticles: ArticleEntity[];
 }
