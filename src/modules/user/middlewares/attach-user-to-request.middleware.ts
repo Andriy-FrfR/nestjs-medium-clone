@@ -16,6 +16,9 @@ export class AttachUserToRequestMiddleware implements NestMiddleware {
 
   async use(req: Request, _res: Response, next: (error?: any) => void) {
     const token = req.headers.authorization?.split('Bearer ')[1];
+
+    if (!token) return next();
+
     const userId = this.authService.decodeToken(token);
 
     if (userId === null) return next();

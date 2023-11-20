@@ -20,7 +20,7 @@ export class CommentService {
     const article = await this.articleService.getArticleBySlug(slug);
     return this.commentRepository.find({
       where: { article: { slug: article.slug } },
-      relations: ['author'],
+      relations: ['author', 'author.followedBy'],
     });
   }
 
@@ -51,7 +51,7 @@ export class CommentService {
     await this.commentRepository.delete(id);
   }
 
-  buildSingleCommentResponse(comment: CommentEntity) {
+  buildSingleCommentResponse(comment: CommentEntity, currentUser?: UserEntity) {
     return {
       comment: {
         id: comment.id,
@@ -62,12 +62,20 @@ export class CommentService {
           username: comment.author.username,
           bio: comment.author.bio,
           image: comment.author.image,
+          following: Boolean(
+            comment.author.followedBy?.find(
+              (user) => user.id === currentUser?.id,
+            ),
+          ),
         },
       },
     };
   }
 
-  buildMultipleCommentsResponse(comments: CommentEntity[]) {
+  buildMultipleCommentsResponse(
+    comments: CommentEntity[],
+    currentUser?: UserEntity,
+  ) {
     return {
       comments: comments.map((comment) => ({
         id: comment.id,
@@ -78,6 +86,11 @@ export class CommentService {
           username: comment.author.username,
           bio: comment.author.bio,
           image: comment.author.image,
+          following: Boolean(
+            comment.author.followedBy?.find(
+              (user) => user.id === currentUser?.id,
+            ),
+          ),
         },
       })),
     };

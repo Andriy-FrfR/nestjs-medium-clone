@@ -22,9 +22,9 @@ export class CommentController {
   constructor(private commentService: CommentService) {}
 
   @Get()
-  async getComments(@Param('slug') slug: string) {
+  async getComments(@Param('slug') slug: string, @User() user: UserEntity) {
     const comments = await this.commentService.getCommentsForArticle(slug);
-    return this.commentService.buildMultipleCommentsResponse(comments);
+    return this.commentService.buildMultipleCommentsResponse(comments, user);
   }
 
   @Post()
@@ -40,7 +40,7 @@ export class CommentController {
       slug,
       user,
     );
-    return this.commentService.buildSingleCommentResponse(comment);
+    return this.commentService.buildSingleCommentResponse(comment, user);
   }
 
   @Delete(':id')

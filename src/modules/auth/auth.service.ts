@@ -75,7 +75,7 @@ export class AuthService {
   buildUserResponse(user: UserEntity) {
     const accessToken = jwt.sign(
       String(user.id),
-      this.configService.get('JWT_SECRET'),
+      this.configService.get('JWT_SECRET')!,
     );
     return {
       user: {
