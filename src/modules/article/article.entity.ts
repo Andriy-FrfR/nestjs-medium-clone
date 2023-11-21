@@ -12,6 +12,7 @@ import {
 
 import { UserEntity } from '../user/user.entity';
 import { CommentEntity } from '../comment/comment.entity';
+import { TagEntity } from '../tag/tag.entity';
 
 @Entity('articles')
 export class ArticleEntity {
@@ -41,6 +42,13 @@ export class ArticleEntity {
 
   @OneToMany(() => CommentEntity, (comment) => comment.article)
   comments: CommentEntity[];
+
+  @ManyToMany(() => TagEntity, (tag) => tag.articles)
+  @JoinTable({
+    joinColumn: { name: 'articleId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tagId', referencedColumnName: 'id' },
+  })
+  tags: TagEntity[];
 
   @ManyToMany(() => UserEntity, (user) => user.favoritedArticles)
   @JoinTable()

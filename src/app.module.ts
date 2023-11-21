@@ -6,6 +6,7 @@ import { DatabaseModule } from './modules/database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { ConfigModule } from './modules/config/config.module';
 import { CommentModule } from './modules/comment/comment.module';
+import { TagModule } from './modules/tag/tag.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CommentModule } from './modules/comment/comment.module';
     UserModule,
     ArticleModule,
     CommentModule,
+    TagModule,
   ],
 })
 export class AppModule {}
