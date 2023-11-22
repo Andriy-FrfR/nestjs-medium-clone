@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, Length, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  ValidateNested,
+} from 'class-validator';
 
 class CreateArticleDtoArticleFields {
   @IsString()
@@ -13,6 +20,11 @@ class CreateArticleDtoArticleFields {
   @IsString()
   @Length(1)
   body: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tagList?: string[];
 }
 
 export class CreateArticleDto {

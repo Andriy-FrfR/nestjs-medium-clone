@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -22,6 +23,11 @@ class UpdateArticleDtoArticleFields {
   @IsString()
   @Length(1)
   body: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tagList?: string[];
 }
 
 export class UpdateArticleDto {

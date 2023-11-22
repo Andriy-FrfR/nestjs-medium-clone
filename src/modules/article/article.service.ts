@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { UserEntity } from '../user/user.entity';
+import { TagService } from '../tag/tag.service';
 
 import { ArticleEntity } from './article.entity';
 import { CreateArticleDto } from './dtos/create-article.dto';
@@ -13,12 +14,13 @@ export class ArticleService {
   constructor(
     @InjectRepository(ArticleEntity)
     private articleRepository: Repository<ArticleEntity>,
+    private tagService: TagService,
   ) {}
 
   async getArticleBySlug(slug: string): Promise<ArticleEntity> {
     const article = await this.articleRepository.findOne({
       where: { slug },
-      relations: ['author', 'author.followedBy', 'favoritedBy'],
+      relations: ['tags', 'author', 'author.followedBy', 'favoritedBy'],
     });
 
     if (!article)
@@ -32,13 +34,20 @@ export class ArticleService {
     user: UserEntity,
   ): Promise<ArticleEntity> {
     const slug = this.generateSlug(createArticleDto.article.title);
+    const tags = createArticleDto.article.tagList
+      ? await this.tagService.upsertTags(createArticleDto.article.tagList)
+      : [];
+
     const article = this.articleRepository.create({
       ...createArticleDto.article,
       author: user,
+      tags,
       slug,
     });
 
-    return await this.articleRepository.save(article);
+    await this.articleRepository.save(article);
+
+    return this.getArticleBySlug(slug);
   }
 
   async updateArticle(
@@ -59,6 +68,12 @@ export class ArticleService {
 
     if (filteredInput.title && filteredInput.title !== article.title) {
       filteredInput.slug = this.generateSlug(filteredInput.title);
+    }
+
+    if (filteredInput.tagList) {
+      filteredInput.tags = await this.tagService.upsertTags(
+        filteredInput.tagList,
+      );
     }
 
     Object.assign(article, filteredInput);
@@ -130,6 +145,7 @@ export class ArticleService {
           article.favoritedBy.find((user) => user.id === currentUser?.id),
         ),
         favoritesCount: article.favoritedBy.length,
+        tagList: article.tags.map((tag) => tag.name),
         author: {
           username: article.author.username,
           bio: article.author.bio,
