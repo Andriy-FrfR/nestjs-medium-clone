@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { UserEntity } from '../user/user.entity';
 import { TagService } from '../tag/tag.service';
@@ -16,6 +16,44 @@ export class ArticleService {
     private articleRepository: Repository<ArticleEntity>,
     private tagService: TagService,
   ) {}
+
+  async listArticles(params: {
+    limit?: number;
+    offset?: number;
+    favorited?: string;
+    author?: string;
+    tag?: string;
+  }): Promise<ArticleEntity[]> {
+    const articles = await this.articleRepository.find({
+      where: {
+        author: { username: params.author },
+        favoritedBy: { username: params.favorited },
+        tags: { name: params.tag },
+      },
+      relations: ['tags', 'author', 'author.followedBy', 'favoritedBy'],
+      take: params.limit,
+      skip: params.offset,
+      order: { createdAt: 'DESC' },
+    });
+
+    return articles;
+  }
+
+  async getUserFeed(
+    currentUser: UserEntity,
+    params: { limit?: number; offset?: number },
+  ): Promise<ArticleEntity[]> {
+    const following = currentUser.following;
+    const followingIds = following.map((user) => user.id);
+    const articles = await this.articleRepository.find({
+      where: { author: { id: In(followingIds) } },
+      order: { createdAt: 'DESC' },
+      skip: params.offset,
+      take: params.limit,
+      relations: ['tags', 'author', 'author.followedBy', 'favoritedBy'],
+    });
+    return articles;
+  }
 
   async getArticleBySlug(slug: string): Promise<ArticleEntity> {
     const article = await this.articleRepository.findOne({
@@ -132,7 +170,7 @@ export class ArticleService {
     return this.articleRepository.save(article);
   }
 
-  buildArticleResponse(article: ArticleEntity, currentUser?: UserEntity) {
+  buildSingleArticleResponse(article: ArticleEntity, currentUser?: UserEntity) {
     return {
       article: {
         slug: article.slug,
@@ -158,5 +196,36 @@ export class ArticleService {
         },
       },
     };
+  }
+
+  buildMultipleArticlesResponse(
+    articles: ArticleEntity[],
+    currentUser?: UserEntity,
+  ) {
+    return articles.map((article) => ({
+      article: {
+        slug: article.slug,
+        title: article.title,
+        description: article.description,
+        body: article.body,
+        createdAt: article.createdAt,
+        updatedAt: article.updatedAt,
+        favorited: Boolean(
+          article.favoritedBy.find((user) => user.id === currentUser?.id),
+        ),
+        favoritesCount: article.favoritedBy.length,
+        tagList: article.tags.map((tag) => tag.name),
+        author: {
+          username: article.author.username,
+          bio: article.author.bio,
+          image: article.author.image,
+          following: Boolean(
+            article.author.followedBy.find(
+              (user) => user.id === currentUser?.id,
+            ),
+          ),
+        },
+      },
+    }));
   }
 }

@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -23,10 +24,46 @@ import { UpdateArticleDto } from './dtos/update-article.dto';
 export class ArticleController {
   constructor(private articleService: ArticleService) {}
 
+  @Get()
+  async listArticles(
+    @Query()
+    params: {
+      limit?: number;
+      offset?: number;
+      favorited?: string;
+      author?: string;
+      tag?: string;
+    },
+    @User() currentUser: UserEntity,
+  ) {
+    const articles = await this.articleService.listArticles(params);
+    return this.articleService.buildMultipleArticlesResponse(
+      articles,
+      currentUser,
+    );
+  }
+
+  @Get('feed')
+  @UseGuards(AuthenticatedGuard)
+  async getUserFeed(
+    @Query()
+    params: {
+      limit?: number;
+      offset?: number;
+    },
+    @User() currentUser: UserEntity,
+  ) {
+    const articles = await this.articleService.getUserFeed(currentUser, params);
+    return this.articleService.buildMultipleArticlesResponse(
+      articles,
+      currentUser,
+    );
+  }
+
   @Get(':slug')
   async getArticle(@Param('slug') slug: string, @User() user: UserEntity) {
     const article = await this.articleService.getArticleBySlug(slug);
-    return this.articleService.buildArticleResponse(article, user);
+    return this.articleService.buildSingleArticleResponse(article, user);
   }
 
   @Post()
@@ -40,7 +77,7 @@ export class ArticleController {
       createArticleDto,
       user,
     );
-    return this.articleService.buildArticleResponse(article, user);
+    return this.articleService.buildSingleArticleResponse(article, user);
   }
 
   @Put(':slug')
@@ -56,7 +93,7 @@ export class ArticleController {
       updateArticleDto,
       user,
     );
-    return this.articleService.buildArticleResponse(article, user);
+    return this.articleService.buildSingleArticleResponse(article, user);
   }
 
   @Delete(':slug')
@@ -69,7 +106,7 @@ export class ArticleController {
   @UseGuards(AuthenticatedGuard)
   async favoriteArticle(@Param('slug') slug: string, @User() user: UserEntity) {
     const article = await this.articleService.favoriteArticle(slug, user);
-    return this.articleService.buildArticleResponse(article, user);
+    return this.articleService.buildSingleArticleResponse(article, user);
   }
 
   @Delete(':slug/favorite')
@@ -79,6 +116,6 @@ export class ArticleController {
     @User() user: UserEntity,
   ) {
     const article = await this.articleService.unfavoriteArticle(slug, user);
-    return this.articleService.buildArticleResponse(article, user);
+    return this.articleService.buildSingleArticleResponse(article, user);
   }
 }

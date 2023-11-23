@@ -23,7 +23,10 @@ export class AttachUserToRequestMiddleware implements NestMiddleware {
 
     if (userId === null) return next();
 
-    const user = await this.userRepository.findOneBy({ id: Number(userId) });
+    const user = await this.userRepository.findOne({
+      where: { id: Number(userId) },
+      relations: ['following'],
+    });
 
     if (user) req.user = user;
 
