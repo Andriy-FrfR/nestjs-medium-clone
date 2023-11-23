@@ -11,8 +11,21 @@ export class TagService {
   ) {}
 
   async getPopularTags(): Promise<TagEntity[]> {
-    // TODO: Add logic to filter most popular tags
-    return this.tagRepository.find();
+    const tags = await this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoin(
+        'articles_tags_tags',
+        'articleToArticleTag',
+        'tag.id = articleToArticleTag.tagId',
+      )
+      .groupBy('tag.name')
+      .having('COUNT(*) > 1')
+      .orderBy('COUNT(*)', 'DESC')
+      .limit(5)
+      .select('tag.name', 'name')
+      .getRawMany();
+
+    return tags;
   }
 
   async upsertTags(tagList: string[]): Promise<TagEntity[]> {
