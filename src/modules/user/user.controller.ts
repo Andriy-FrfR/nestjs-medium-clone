@@ -8,9 +8,9 @@ import {
   Put,
   UseGuards,
   UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 
+import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 
 import { UserEntity } from './user.entity';

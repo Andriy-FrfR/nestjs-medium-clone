@@ -9,16 +9,16 @@ import {
   Query,
   UseGuards,
   UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
-import { ArticleService } from './article.service';
 
+import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { User } from '../user/decorators/user.decorator';
 import { UserEntity } from '../user/user.entity';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 
 import { CreateArticleDto } from './dtos/create-article.dto';
 import { UpdateArticleDto } from './dtos/update-article.dto';
+import { ArticleService } from './article.service';
 
 @Controller('articles')
 export class ArticleController {

@@ -7,9 +7,9 @@ import {
   Post,
   UseGuards,
   UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 
+import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 import { UserEntity } from '../user/user.entity';
 import { User } from '../user/decorators/user.decorator';
