@@ -10,6 +10,7 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { User } from '../user/decorators/user.decorator';
@@ -21,6 +22,7 @@ import { UpdateArticleDto } from './dtos/update-article.dto';
 import { ArticleService } from './article.service';
 
 @Controller('articles')
+@ApiTags('articles')
 export class ArticleController {
   constructor(private articleService: ArticleService) {}
 

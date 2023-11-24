@@ -8,6 +8,7 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
@@ -18,6 +19,7 @@ import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dtos/create-comment.dto';
 
 @Controller('articles/:slug/comments')
+@ApiTags('comments')
 export class CommentController {
   constructor(private commentService: CommentService) {}
 

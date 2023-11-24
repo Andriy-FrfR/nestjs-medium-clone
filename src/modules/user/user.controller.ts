@@ -9,6 +9,12 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
@@ -19,6 +25,7 @@ import { User } from './decorators/user.decorator';
 import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Controller()
+@ApiTags('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
@@ -29,6 +36,22 @@ export class UserController {
   }
 
   @Put('user')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Forbidden',
+    schema: {
+      example: {
+        user: {
+          email: 'string',
+          bio: 'string',
+          image: 'string',
+          username: 'XXXXXX',
+        },
+      },
+    },
+  })
   @UseGuards(AuthenticatedGuard)
   @UsePipes(new ValidationPipe())
   async updateUser(
